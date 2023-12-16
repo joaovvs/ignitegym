@@ -4,6 +4,7 @@ import LogoSvg from "@assets/logo.svg";
 import BackgroundImg from "@assets/background.png";
 
 import { Input } from "@components/Input";
+import { Button } from "@components/Button";
 
 export function SignIn() {
   return (
@@ -27,7 +28,9 @@ export function SignIn() {
         </Heading>
 
         <Input placeholder="E-mail"/>
-        <Input placeholder="Senha"/>
+        <Input placeholder="Senha" type="password"/>
+
+        <Button title='Acessar'/>
       </Center>
     </VStack>
   );
