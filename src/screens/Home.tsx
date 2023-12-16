@@ -4,9 +4,11 @@ import { HomeHeader } from '@components/HomeHeader';
 import { VStack, FlatList, HStack, Heading, Text } from 'native-base';
 
 import { Group } from '@components/Group';
+import { ExerciseCard } from '@components/ExerciseCard';
 
 export function Home(){
     const [groups, setGroups] = useState(['Costas', 'Bíceps','Tríceps','Ombro']);
+    const [exercises, setExercises] = useState(['Puxada fontal', 'Remada curvada','Remada unilateral', 'Levantamento terra']);
     const [groupSelected, setGroupSelected] = useState('Costas');
 
     return(
@@ -36,12 +38,25 @@ export function Home(){
                         Exercícios
                     </Heading>
 
-                    <Text color={'gray.200'} fontSize={'sm'}>4</Text>
+                    <Text color={'gray.200'} fontSize={'sm'}>
+                        {exercises.length}
+                        </Text>
                 </HStack>
 
+
+            
+                <FlatList
+                data={exercises}
+                keyExtractor={item => item}
+                renderItem={({item})=> (
+                <ExerciseCard name={item}/>
+                )}
+                showsVerticalScrollIndicator={false}
+                _contentContainerStyle={{paddingBottom: 20}}
+                />
             </VStack>
             
-
+            
             
             
         </VStack>
