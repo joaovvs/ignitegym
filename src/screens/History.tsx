@@ -9,7 +9,7 @@ export function History(){
     const [exercises, setexercises] = useState([
         {
             title: '26.08.22',
-            data: ['Puxada fontal', 'remada unilateral']
+            data: ['Puxada fontal', 'remada unilateral','a','b']
         },
         {
             title: '27.08.22',
@@ -40,6 +40,7 @@ export function History(){
                         Vamos fazer exercícios hoje?
                     </Text>
                 )}
+                showsVerticalScrollIndicator={false}
             />
 
         </VStack>
