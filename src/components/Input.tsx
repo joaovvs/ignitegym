@@ -27,7 +27,7 @@ export function Input({errorMessage = null, isInvalid ,...rest }:Props){
                     borderColor:'green.500'}}
                 {...rest}
             />
-            <FormControl.ErrorMessage>
+            <FormControl.ErrorMessage _text={{color: 'red.500'}}>
                 {errorMessage}
             </FormControl.ErrorMessage>
         </FormControl>
