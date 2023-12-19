@@ -33,8 +33,8 @@ export function Profile(){
 
             if(photoSelected.assets[0].uri){
                 const photoInfo = await FileSystem.getInfoAsync(photoSelected.assets[0].uri);
-                console.log(photoInfo);
-                if (photoInfo.size && (photoInfo.size / 1024 /1024) > 5){
+
+                if (photoInfo.exists && (photoInfo.size / 1024 /1024) > 5){
                     return toast.show({
                         title: "A imagem é muito grande. Escolha uma imagem de até 5MB!",
                         placement: 'top',
