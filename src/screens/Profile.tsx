@@ -16,6 +16,7 @@ import * as FileSystem from "expo-file-system";
 import * as yup from "yup";
 
 import { ScreenHeader } from "@components/ScreenHeader";
+import userPhotoDefault from "@assets/userPhotoDefault.png";
 import { UserPhoto } from "@components/UserPhoto";
 import { Input } from "@components/Input";
 import { Button } from "@components/Button";
@@ -34,26 +35,33 @@ type FormDataProps = {
 };
 
 const profileSchema = yup.object({
-    name: yup.string().required('Informe o nome'),
-    email: yup.string().required('Informe o e-mail').email('E-mail inválido'),
-    password: yup.string().min(6, 'A senha deve ter pelo menos 6 dígitos.').nullable().transform((value) => !!value ? value : null),
-    old_password: yup.string().min(6, 'A senha deve ter pelo menos 6 dígitos.').nullable().transform((value) => !!value ? value : null),
-    confirm_password: yup
-      .string()
-      .nullable()
-      .transform((value) => !!value ? value : null)
-      .oneOf([yup.ref('password')], 'A confirmação de senha não confere.')
-      .when('password', {
-        is: (Field: any) => Field,
-        then: (schema) => 
-          schema.nullable().required('Informe a confirmação da senha')
-      }),
-  })
+  name: yup.string().required("Informe o nome"),
+  email: yup.string().required("Informe o e-mail").email("E-mail inválido"),
+  password: yup
+    .string()
+    .min(6, "A senha deve ter pelo menos 6 dígitos.")
+    .nullable()
+    .transform((value) => (!!value ? value : null)),
+  old_password: yup
+    .string()
+    .min(6, "A senha deve ter pelo menos 6 dígitos.")
+    .nullable()
+    .transform((value) => (!!value ? value : null)),
+  confirm_password: yup
+    .string()
+    .nullable()
+    .transform((value) => (!!value ? value : null))
+    .oneOf([yup.ref("password")], "A confirmação de senha não confere.")
+    .when("password", {
+      is: (Field: any) => Field,
+      then: (schema) =>
+        schema.nullable().required("Informe a confirmação da senha"),
+    }),
+});
 
 export function Profile() {
-  const [isUpdating,setIsUpdating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [photoIsLoading, setPhotoIsLoading] = useState(false);
-  const [userPhoto, setUserPhoto] = useState("https://github.com/joaovvs.png");
 
   const toast = useToast();
   const { user, updateUserProfile } = useAuth();
@@ -63,11 +71,11 @@ export function Profile() {
     handleSubmit,
     formState: { errors },
   } = useForm<FormDataProps>({
-      defaultValues: {
-          name: user.name,
-          email: user.email,
-        },
-        resolver: yupResolver(profileSchema),
+    defaultValues: {
+      name: user.name,
+      email: user.email,
+    },
+    resolver: yupResolver(profileSchema),
   });
 
   async function handleUserPhotoSelect() {
@@ -96,10 +104,50 @@ export function Profile() {
             bgColor: "red.500",
           });
         }
-        setUserPhoto(photoSelected.assets[0].uri);
+
+        const fileExtension = photoSelected.assets[0].uri.split(".").pop();
+
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLowerCase().replace(" ", "_"),
+          uri: photoSelected.assets[0].uri,
+          type: `${photoSelected.assets[0].type}/${fileExtension}`,
+        } as any;
+
+        const userPhotoUploadForm = new FormData();
+        userPhotoUploadForm.append("avatar", photoFile);
+
+        const avatarUpdatedResponse = await api.patch(
+          "/users/avatar",
+          userPhotoUploadForm,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        const userUpdated = user;
+        userUpdated.avatar = avatarUpdatedResponse.data.avatar;
+
+        updateUserProfile(userUpdated);
+
+        toast.show({
+          title: "Foto atualizada com sucesso!",
+          placement: "top",
+          bgColor: "green.700",
+        });
       }
     } catch (error) {
-      console.log(error);
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível carregar a foto do usuário. tente novamente mais tarde";
+
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
     } finally {
       setPhotoIsLoading(false);
     }
@@ -112,7 +160,7 @@ export function Profile() {
       const userUpdated = user;
       userUpdated.name = data.name;
 
-      await api.put('/users', data);
+      await api.put("/users", data);
 
       await updateUserProfile(userUpdated);
       toast.show({
@@ -120,20 +168,20 @@ export function Profile() {
         placement: "top",
         bgColor: "green.700",
       });
-
     } catch (error) {
       const isAppError = error instanceof AppError;
-      const title = isAppError ? error.message : 'Não foi possível atualizar o perfil do usuário. tente novamente mais tarde'
+      const title = isAppError
+        ? error.message
+        : "Não foi possível atualizar o perfil do usuário. tente novamente mais tarde";
 
       toast.show({
         title,
         placement: "top",
         bgColor: "red.500",
       });
-    }finally{
+    } finally {
       setIsUpdating(false);
     }
-
   }
 
   return (
@@ -151,7 +199,11 @@ export function Profile() {
             />
           ) : (
             <UserPhoto
-              source={{ uri: userPhoto }}
+              source={
+                user.avatar
+                  ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` }
+                  : userPhotoDefault
+              }
               alt="Foto de perfil do usuário"
               size={PHOTO_SIZE}
             />
